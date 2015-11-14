@@ -25,4 +25,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'seo_meta',                    '~> 1.4.0'
   s.add_dependency 'refinerycms-core',            version
   s.add_dependency 'babosa',                      '!= 0.3.6'
+  s.add_dependency 'acts-as-taggable-on',         '~> 3.4.4'
 end

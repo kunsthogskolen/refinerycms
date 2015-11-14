@@ -28,6 +28,10 @@ module Refinery
 
     validates :custom_slug, :uniqueness => true, :allow_blank => true
 
+    # Docs for acts-as-taggable-on https://github.com/mbleigh/acts-as-taggable-on
+    # This has to appear *before* acts_as_nested_set
+    acts_as_taggable
+
     # Docs for acts_as_nested_set https://github.com/collectiveidea/awesome_nested_set
     # rather than :delete_all we want :destroy
     acts_as_nested_set :dependent => :destroy
