@@ -22,7 +22,7 @@ module Refinery
                     :skip_to_first_child, :position, :show_in_menu, :draft,
                     :parts_attributes, :parent_id, :menu_title, :page_id,
                     :layout_template, :view_template, :custom_slug, :slug,
-                    :title, *::SeoMeta.attributes.keys
+                    :title, *::SeoMeta.attributes.keys, :tag_list
 
     validates :title, :presence => true
 
