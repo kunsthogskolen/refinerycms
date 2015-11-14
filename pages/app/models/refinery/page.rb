@@ -18,6 +18,10 @@ module Refinery
     seo_fields = ::SeoMeta.attributes.keys.map{|a| [a, :"#{a}="]}.flatten
     delegate(*(seo_fields << {:to => :translation}))
 
+    # Docs for acts-as-taggable-on https://github.com/mbleigh/acts-as-taggable-on
+    # This has to appear *before* acts_as_nested_set
+    acts_as_taggable
+
     attr_accessible :id, :deletable, :link_url, :menu_match,
                     :skip_to_first_child, :position, :show_in_menu, :draft,
                     :parts_attributes, :parent_id, :menu_title, :page_id,
@@ -27,10 +31,6 @@ module Refinery
     validates :title, :presence => true
 
     validates :custom_slug, :uniqueness => true, :allow_blank => true
-
-    # Docs for acts-as-taggable-on https://github.com/mbleigh/acts-as-taggable-on
-    # This has to appear *before* acts_as_nested_set
-    acts_as_taggable
 
     # Docs for acts_as_nested_set https://github.com/collectiveidea/awesome_nested_set
     # rather than :delete_all we want :destroy
