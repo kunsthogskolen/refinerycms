@@ -7,16 +7,16 @@ module Refinery
   class Page < Core::BaseModel
     extend FriendlyId
 
-    translates :title, :menu_title, :custom_slug, :slug, :include => :seo_meta
+    translates :title, :menu_title, :custom_slug, :slug, include: :seo_meta
 
     class Translation
       is_seo_meta
-      attr_accessible *::SeoMeta.attributes.keys, :locale
+      attr_accessible(*::SeoMeta.attributes.keys, :locale)
     end
 
     # Delegate SEO Attributes to globalize translation
-    seo_fields = ::SeoMeta.attributes.keys.map{|a| [a, :"#{a}="]}.flatten
-    delegate(*(seo_fields << {:to => :translation}))
+    seo_fields = ::SeoMeta.attributes.keys.map { |a| [a, :"#{a}="] }.flatten
+    delegate(*(seo_fields << { to: :translation }))
 
     # Docs for acts-as-taggable-on https://github.com/mbleigh/acts-as-taggable-on
     # This has to appear *before* acts_as_nested_set
@@ -28,19 +28,22 @@ module Refinery
                     :layout_template, :view_template, :custom_slug, :slug,
                     :title, *::SeoMeta.attributes.keys, :tag_list
 
-    validates :title, :presence => true
+    validates :title, presence: true
 
-    validates :custom_slug, :uniqueness => true, :allow_blank => true
+    validates :custom_slug, uniqueness: true, allow_blank: true
 
     # Docs for acts_as_nested_set https://github.com/collectiveidea/awesome_nested_set
     # rather than :delete_all we want :destroy
-    acts_as_nested_set :dependent => :destroy
+    acts_as_nested_set dependent: :destroy
 
     # Docs for friendly_id http://github.com/norman/friendly_id
-    friendly_id_options = {:use => [:reserved, :globalize], :reserved_words => %w(index new session login logout users refinery admin images wymiframe)}
+    friendly_id_options = { use: [:reserved, :globalize],
+                            reserved_words: %w(index new session login logout
+                                               users refinery admin images
+                                               wymiframe) }
     if ::Refinery::Pages.scope_slug_by_parent
       friendly_id_options[:use] << :scoped
-      friendly_id_options.merge!(:scope => :parent)
+      friendly_id_options.merge!(scope: :parent)
     end
 
     friendly_id :custom_slug_or_title, friendly_id_options
