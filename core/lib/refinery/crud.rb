@@ -295,7 +295,7 @@ module Refinery
                 end
               end
 
-              #{class_name}.rebuild! if #{class_name}.respond_to?(:rebuild!)
+              # #{class_name}.rebuild! if #{class_name}.respond_to?(:rebuild!)
 
               after_update_positions
             end
