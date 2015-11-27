@@ -284,7 +284,7 @@ module Refinery
                       @current_#{singular_name}.move_to_root
                     end
                   else
-                    @current_#{singular_name}.update_columns position: index
+                    @current_#{singular_name}.write_attribute(:position, index)
                   end
 
                   if hash['children'].present?
@@ -295,7 +295,7 @@ module Refinery
                 end
               end
 
-              #  #{class_name}.rebuild! if #{class_name}.respond_to?(:rebuild!)
+              # #{class_name}.rebuild! if #{class_name}.respond_to?(:rebuild!)
 
               after_update_positions
             end
@@ -303,10 +303,14 @@ module Refinery
             def update_child_positions(_node, #{singular_name})
               list = _node['children']['0']
               child_positions_changed = false
-              list.sort_by { |k, v| k.to_i}.map { |item| item[1] }.each_with_index do |child, index|
-                child_id = child['id'].split(/#{singular_name}\_?/).reject(&:empty?).first
-                child_#{singular_name} = #{class_name}.where(:id => child_id).first
-                child_positions_changed ||= #{singular_name}.children[index] != child_#{singular_name}
+              list.sort_by { |k, v| k.to_i }.map { |item| item[1] }
+                .each_with_index do |child, index|
+                child_id = child['id'].split(/#{singular_name}\_?/)
+                  .reject(&:empty?).first
+                child_#{singular_name} =
+                  #{class_name}.where(:id => child_id).first
+                child_positions_changed ||=
+                  #{singular_name}.children[index] != child_#{singular_name}
                 if child_positions_changed
                   child_#{singular_name}.move_to_child_of(#{singular_name})
                 end

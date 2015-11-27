@@ -168,11 +168,15 @@ module Refinery
       alias_method_chain :rebuild!, :slug_nullification
 
       protected
+
       def nullify_duplicate_slugs_under_the_same_parent!
         t_slug = translation_class.arel_table[:slug]
-        joins(:translations).group(:locale, :parent_id, t_slug).having(t_slug.count.gt(1)).count.
-        each do |(locale, parent_id, slug), count|
-          by_slug(slug, :locale => locale).where(:parent_id => parent_id).drop(1).each do |page|
+        joins(:translations)
+          .group(:locale, :parent_id, t_slug)
+          .having(t_slug.count.gt(1)).count
+          .each do |(locale, parent_id, slug), _count|
+          by_slug(slug, locale: locale).where(parent_id: parent_id)
+            .drop(1).each do |page|
             page.slug = nil # kill the duplicate slug
             page.save # regenerate the slug
           end
@@ -181,7 +185,8 @@ module Refinery
     end
 
     def translated_to_default_locale?
-      persisted? && translations.where(:locale => Refinery::I18n.default_frontend_locale).any?
+      persisted? &&
+        translations.where(locale: Refinery::I18n.default_frontend_locale).any?
     end
 
     # The canonical page for this particular page.
@@ -197,15 +202,17 @@ module Refinery
       Globalize.with_locale(::Refinery::I18n.default_frontend_locale) { slug }
     end
 
-    # Returns in cascading order: custom_slug or menu_title or title depending on
-    # which attribute is first found to be present for this page.
+    # Returns in cascading order: custom_slug or menu_title or title depending
+    # on which attribute is first found to be present for this page.
     def custom_slug_or_title
       custom_slug.presence || menu_title.presence || title.presence
     end
 
     # Am I allowed to delete this page?
-    # If a link_url is set we don't want to break the link so we don't allow them to delete
-    # If deletable is set to false then we don't allow this page to be deleted. These are often Refinery system pages
+    # If a link_url is set we don't want to break the link so we don't allow
+    # them to delete
+    # If deletable is set to false then we don't allow this page to be deleted.
+    # These are often Refinery system pages
     def deletable?
       deletable && link_url.blank? && menu_match.blank?
     end
@@ -214,7 +221,7 @@ module Refinery
     # This ensures that they are in the correct 0,1,2,3,4... etc order.
     def reposition_parts!
       reload.parts.each_with_index do |part, index|
-        part.update_attributes :position => index
+        part.write_attribute(:position, index)
       end
     end
 
@@ -257,20 +264,23 @@ module Refinery
     end
 
     def link_url_localised?
-      Refinery.deprecate "Refinery::Page#link_url_localised?", :when => '2.2',
-                         :replacement => "Refinery::Pages::Url::Localised#url"
+      Refinery.deprecate "Refinery::Page#link_url_localised?",
+                         when: '2.2',
+                         replacement: "Refinery::Pages::Url::Localised#url"
       Pages::Url::Localised.new(self).url
     end
 
     def url_normal
-      Refinery.deprecate "Refinery::Page#url_normal", :when => '2.2',
-                         :replacement => "Refinery::Pages::Url::Normal#url"
+      Refinery.deprecate "Refinery::Page#url_normal",
+                         when: '2.2',
+                         replacement: "Refinery::Pages::Url::Normal#url"
       Pages::Url::Normal.new(self).url
     end
 
     def url_marketable
-      Refinery.deprecate "Refinery::Page#url_marketable", :when => '2.2',
-                         :replacement => "Refinery::Pages::Url::Marketable#url"
+      Refinery.deprecate 'Refinery::Page#url_marketable',
+                         when: '2.2',
+                         replacement: 'Refinery::Pages::Url::Marketable#url'
       Pages::Url::Marketable.new(self).url
     end
 
@@ -357,25 +367,26 @@ module Refinery
     #
     #    ::Refinery::Page.first.part_with_title(:body)
     #
-    # Will return the Refinery::PagePart object with that title using the first page.
+    # Will return the Refinery::PagePart object with that title using
+    # the first page.
     def part_with_title(part_title)
       # self.parts is usually already eager loaded so we can now just grab
       # the first element matching the title we specified.
-      self.parts.detect do |part|
-        part.title.present? and # protecting against the problem that occurs when have nil title
-        part.title == part_title.to_s or
-        part.title.downcase.gsub(" ", "_") == part_title.to_s.downcase.gsub(" ", "_")
+      parts.detect do |part|
+        part.title.present? &&
+          part.title == part_title.to_s ||
+          part.title.downcase.tr(' ', '_') ==
+            part_title.to_s.downcase.tr(' ', '_')
       end
     end
 
-  private
+    private
 
     # Make sures that a translation exists for this page.
     # The translation is set to the default frontend locale.
     def ensure_locale!
-      if self.translations.empty?
-        self.translations.build(:locale => Refinery::I18n.default_frontend_locale)
-      end
+      return unless translations.empty?
+      translations.build(locale: Refinery::I18n.default_frontend_locale)
     end
 
     # Protects generated slugs from title if they are in the list of reserved words
@@ -388,11 +399,15 @@ module Refinery
       # If we are scoping by parent, no slashes are allowed. Otherwise, slug is potentially
       # a custom slug that contains a custom route to the page.
       if !Pages.scope_slug_by_parent && slug_string.include?('/')
-        slug_string.sub!(%r{^/*}, '').sub!(%r{/*$}, '') # Remove leading and trailing slashes, but allow internal
-        slug_string.split('/').select(&:present?).map {|s| normalize_friendly_id_with_marketable_urls(s) }.join('/')
+        # Remove leading and trailing slashes, but allow internal
+        slug_string.sub!(%r{^/*}, '').sub!(%r{/*$}, '')
+        slug_string.split('/').select(&:present?).map do |s|
+          normalize_friendly_id_with_marketable_urls(s)
+        end.join('/')
       else
         sluggified = slug_string.to_slug.normalize!
-        if Pages.marketable_urls && self.class.friendly_id_config.reserved_words.include?(sluggified)
+        if Pages.marketable_urls &&
+           self.class.friendly_id_config.reserved_words.include?(sluggified)
           sluggified << "-page"
         end
         sluggified
@@ -401,16 +416,19 @@ module Refinery
     alias_method_chain :normalize_friendly_id, :marketable_urls
 
     def puts_destroy_help
-      puts "This page is not deletable. Please use .destroy! if you really want it deleted "
+      puts "This page is not deletable. Please use .destroy! if you really " \
+           "want it deleted "
       puts "unset .link_url," if link_url.present?
       puts "unset .menu_match," if menu_match.present?
       puts "set .deletable to true" unless deletable
     end
 
     def slug_locale
-      return Globalize.locale if translation_for(Globalize.locale).try(:slug).present?
+      return Globalize.locale if
+        translation_for(Globalize.locale).try(:slug).present?
 
-      if translations.empty? || translation_for(Refinery::I18n.default_frontend_locale).present?
+      if translations.empty? ||
+         translation_for(Refinery::I18n.default_frontend_locale).present?
         Refinery::I18n.default_frontend_locale
       else
         translations.first.locale
