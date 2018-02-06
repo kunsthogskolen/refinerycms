@@ -58,10 +58,6 @@ module Refinery
 
     accepts_nested_attributes_for :parts, :allow_destroy => true
 
-    # before_save do |m|
-    #   m.translation.globalized_model = self
-    #   m.translation.save if m.translation.new_record?
-    # end
     before_create :ensure_locale!
     before_destroy :deletable?
     after_save :reposition_parts!
