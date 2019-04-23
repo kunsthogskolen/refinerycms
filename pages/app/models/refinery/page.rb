@@ -55,7 +55,7 @@ module Refinery
 
     # Docs for acts_as_nested_set https://github.com/collectiveidea/awesome_nested_set
     # rather than :delete_all we want :destroy
-    acts_as_nested_set :dependent => :destroy
+    acts_as_nested_set counter_cache: :children_count, dependent: :destroy, touch: true
 
     friendly_id :custom_slug_or_title, FriendlyIdOptions.options
 
@@ -72,6 +72,9 @@ module Refinery
 
     before_destroy :deletable?
     after_save :reposition_parts!
+
+    after_save :update_all_descendants
+    after_move :update_all_descendants
 
     class << self
       # Live pages are 'allowed' to be shown in the frontend of your website.
@@ -378,11 +381,15 @@ module Refinery
     def slug_locale
       return Globalize.locale if translation_for(Globalize.locale, false).try(:slug).present?
 
-      if translations.empty? || translation_for(Refinery::I18n.default_frontend_locale, false).present?
+      if translations.empty? || translation_for(Refinery::I18n.default_frontend_locale, false).try(:slug).present?
         Refinery::I18n.default_frontend_locale
       else
         translations.first.locale
       end
+    end
+
+    def update_all_descendants
+      self.descendants.map(&:touch)
     end
   end
 end
