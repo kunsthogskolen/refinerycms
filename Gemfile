@@ -2,16 +2,16 @@ source 'https://rubygems.org'
 
 gemspec
 
-path './' do
-  gem 'refinerycms-core'
-  gem 'refinerycms-images'
-  gem 'refinerycms-pages'
-  gem 'refinerycms-resources'
+path "./" do
+  gem "refinerycms-core"
+  gem "refinerycms-images"
+  gem "refinerycms-pages"
+  gem "refinerycms-resources"
 end
 
-gem 'poltergeist', '>= 1.8.1'
 gem 'spring'
 gem 'spring-commands-rspec'
+gem 'selenium-webdriver', require: false
 
 # Add support for refinerycms-acts-as-indexed
 gem 'refinerycms-acts-as-indexed', ['~> 3.0', '>= 3.0.0']
@@ -28,14 +28,14 @@ end
 if !ENV['TRAVIS'] || ENV['DB'] == 'mysql'
   group :mysql do
     gem 'activerecord-jdbcmysql-adapter', '>= 1.3.0.rc1', platform: :jruby
-    gem 'mysql2', '~> 0.3.18', platform: :ruby
+    gem 'mysql2', '~> 0.4', :platform => :ruby
   end
 end
 
 if !ENV['TRAVIS'] || ENV['DB'] == 'postgresql'
   group :postgres, :postgresql do
     gem 'activerecord-jdbcpostgresql-adapter', '>= 1.3.0.rc1', platform: :jruby
-    gem 'pg', platform: :ruby
+    gem 'pg', '~> 0.21', platform: :ruby
   end
 end
 
@@ -44,14 +44,15 @@ group :development do
 end
 
 group :test do
-  gem 'coveralls', require: false
+  gem 'refinerycms-testing', path: './testing'
   gem 'generator_spec', '~> 0.9.3'
   gem 'launchy'
-  gem 'refinerycms-testing', path: './testing'
+  gem 'coveralls', require: false
   gem 'rspec-retry'
+  gem 'puma'
 end
 
 # Load local gems according to Refinery developer preference.
-if File.exist? local_gemfile = File.expand_path('.gemfile', __dir__)
+if File.exist? local_gemfile = File.expand_path('../.gemfile', __FILE__)
   eval File.read(local_gemfile)
 end

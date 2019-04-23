@@ -2,7 +2,7 @@ module Refinery
   class Version
     @major = 4
     @minor = 0
-    @tiny  = 1
+    @tiny  = 2
     @build = nil
 
     class << self
@@ -13,7 +13,7 @@ module Refinery
       end
 
       def required_ruby_version
-        '>= 2.2.2'
+        '>= 2.4.5'
       end
     end
   end

@@ -1,9 +1,10 @@
 module Refinery
   module Admin
     class ResourcesController < ::Refinery::AdminController
+
       crudify :'refinery/resource',
               include: [:translations],
-              order: 'updated_at DESC',
+              order: "updated_at DESC",
               sortable: false
 
       before_action :init_dialog
@@ -11,7 +12,7 @@ module Refinery
       def new
         @resource = Resource.new if @resource.nil?
 
-        @url_override = refinery.admin_resources_path(dialog: from_dialog?)
+        @url_override = refinery.admin_resources_path(:dialog => from_dialog?)
       end
 
       def create
@@ -23,42 +24,48 @@ module Refinery
             @resource_id = @resources.detect(&:persisted?).id
             @resource = nil
 
-            insert
-          end
-        elsif @resources.all?(&:valid?)
-          flash.notice =
-            t('created', scope: 'refinery.crudify',
-                         what: "'#{@resources.map(&:title).join("', '")}'")
-          if from_dialog?
-            @dialog_successful = true
-            render '/refinery/admin/dialog_success', layout: true
-          else
-            redirect_to refinery.admin_resources_path
+            self.insert
           end
         else
-          new # important for dialogs
-          render 'new'
+          if @resources.all?(&:valid?)
+            flash.notice = t('created', :scope => 'refinery.crudify', :what => "'#{@resources.map(&:title).join("', '")}'")
+            if from_dialog?
+              @dialog_successful = true
+              render '/refinery/admin/dialog_success', layout: true
+            else
+              redirect_to refinery.admin_resources_path
+            end
+          else
+            self.new # important for dialogs
+            render 'new'
+          end
         end
       end
 
       def insert
-        new if @resource.nil?
-
-        @url_override = refinery.admin_resources_path(
-          request.query_parameters.merge(insert: true)
-        )
+        self.new if @resource.nil?
+        @url_override = refinery.admin_resources_path(request.query_parameters.merge(insert: true))
 
         if params[:conditions].present?
           extra_condition = params[:conditions].split(',')
 
-          extra_condition[1] = true if extra_condition[1] == 'true'
-          extra_condition[1] = false if extra_condition[1] == 'false'
-          extra_condition[1] = nil if extra_condition[1] == 'nil'
-          paginate_resources(extra_condition[0] => extra_condition[1])
-        else
-          paginate_resources
+          extra_condition[1] = true if extra_condition[1] == "true"
+          extra_condition[1] = false if extra_condition[1] == "false"
+          extra_condition[1] = nil if extra_condition[1] == "nil"
         end
-        render 'insert'
+
+        find_all_resources(({extra_condition[0] => extra_condition[1]} if extra_condition.present?))
+        search_all_resources if searching?
+
+        paginate_resources
+
+        @resource_area_selected = from_dialog?
+
+        if params[:visual_editor]
+          render '/refinery/admin/pages_dialogs/link_to' 
+        else 
+          render 'insert' 
+        end
       end
 
       protected
@@ -78,12 +85,8 @@ module Refinery
         super unless action_name == 'insert'
       end
 
-      def paginate_resources(conditions = {})
-        @resources = Resource.where(conditions)
-                             .paginate(
-                               page: params[:page],
-                               per_page: Resource.per_page(from_dialog?)
-                             ).order('created_at DESC')
+      def paginate_resources
+        @resources = @resources.paginate(page: params[:page], per_page: Resource.per_page(from_dialog?))
       end
 
       def resource_params
@@ -98,12 +101,17 @@ module Refinery
       private
 
       def permitted_resource_params
-        [:resource_title, file: []]
+        [
+          :resource_title, :file => []
+        ]
       end
 
       def permitted_update_resource_params
-        %i[resource_title file]
+        [
+          :resource_title, :file
+        ]
       end
+
     end
   end
 end
