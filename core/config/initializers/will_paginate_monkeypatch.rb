@@ -1,4 +1,4 @@
-require "will_paginate/view_helpers/action_view"
+require 'will_paginate/view_helpers/action_view'
 
 module WillPaginate
   module ActionView
@@ -12,7 +12,7 @@ module WillPaginate
         url_params = @base_url_params.dup
         add_current_page_param(url_params, page)
 
-        if /refinery/ === url_params[:controller]
+        if url_params[:controller] == /refinery/
           @template.refinery.url_for(url_params)
         else
           @template.url_for(url_params)

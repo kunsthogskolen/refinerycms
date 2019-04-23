@@ -1,4 +1,4 @@
-require File.expand_path('../../refinery', __FILE__)
+require File.expand_path('../refinery', __dir__)
 require 'truncate_html'
 require 'will_paginate'
 require 'refinery/i18n'
@@ -12,7 +12,7 @@ module Refinery
 
     class << self
       def root
-        @root ||= Pathname.new(File.expand_path('../../../', __FILE__))
+        @root ||= Pathname.new(File.expand_path('../..', __dir__))
       end
     end
   end

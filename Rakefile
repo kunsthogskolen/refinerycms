@@ -5,20 +5,18 @@ rescue LoadError
   puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
 end
 
-APP_RAKEFILE = File.expand_path("../spec/dummy/Rakefile", __FILE__)
+APP_RAKEFILE = File.expand_path('spec/dummy/Rakefile', __dir__)
 
-if File.exists?(APP_RAKEFILE)
-  load 'rails/tasks/engine.rake'
-end
+load 'rails/tasks/engine.rake' if File.exist?(APP_RAKEFILE)
 
-Dir[File.expand_path('../tasks/**/*', __FILE__)].each do |task|
+Dir[File.expand_path('tasks/**/*', __dir__)].each do |task|
   load task
 end
 
-require "refinerycms-testing"
+require 'refinerycms-testing'
 Refinery::Testing::Railtie.load_dummy_tasks File.dirname(__FILE__)
 
-desc "Build gem files for all projects"
-task :build => "all:build"
+desc 'Build gem files for all projects'
+task build: 'all:build'
 
-task :default => :spec
+task default: :spec
