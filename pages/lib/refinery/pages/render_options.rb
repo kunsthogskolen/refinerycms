@@ -1,12 +1,14 @@
 module Refinery
   module Pages
     module RenderOptions
-
       def render_options_for_template(page)
         render_options = {}
-        if Refinery::Pages.use_layout_templates && page.layout_template.present?
-          render_options[:layout] = page.layout_template
-        end
+        render_options[:layout] =
+          if Refinery::Pages.use_layout_templates && page.layout_template.present?
+            page.layout_template
+          else
+            'application'
+          end
 
         template = page.link_url == "/" ? "home" : "show"
 
@@ -21,7 +23,6 @@ module Refinery
       end
 
       protected :render_options_for_template, :render_with_templates?
-
     end
   end
 end
