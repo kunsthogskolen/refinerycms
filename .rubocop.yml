@@ -1,10 +1,41 @@
 require:
   - rubocop-performance
-  - rubocop-rspec
-  - rubocop-rails
 
 Layout/LineLength:
-  Max: 85
+  Max: 120
+
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/SlicingWithRange:
+  Enabled: true
 
 Style/StringLiterals:
   Enabled: false
@@ -33,24 +64,9 @@ Naming/VariableNumber:
 Metrics/MethodLength:
   Max: 20
 
-RSpec/MultipleExpectations:
-  Enabled: false
-
-RSpec/ExampleLength:
-  Enabled: false
-
 Layout/HeredocIndentation:
   Exclude:
     - "**/*_spec.rb"
-
-RSpec/NamedSubject:
-  Enabled: false
-
-RSpec/ContextWording:
-  Enabled: false
-
-RSpec/MessageSpies:
-  EnforcedStyle: 'receive'
 
 AllCops:
   TargetRubyVersion: 2.4

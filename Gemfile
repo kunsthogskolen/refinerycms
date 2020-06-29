@@ -41,6 +41,8 @@ end
 
 group :development do
   gem 'listen', '~> 3.0'
+  gem 'rubocop', '~> 0.86.0'
+  gem 'rubocop-performance', '~> 1.6.1'
 end
 
 group :test do
